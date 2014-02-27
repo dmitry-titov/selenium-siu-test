@@ -9,6 +9,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class SeleniumOEP {
@@ -22,7 +23,7 @@ public class SeleniumOEP {
     smokeTestAdmin(userLogin[0]);
     smokeTestManager(userLogin[1]);
     smokeTestRequester(userLogin[2]);
-//    editUserTest();
+    viewUserTest(userLogin[0]);
     System.out.println("Complete!");
   }
 
@@ -99,7 +100,7 @@ public class SeleniumOEP {
     driver.quit();
   }
 
-  public static void smokeTestManager(String loginUser) throws InterruptedException {
+  public static void smokeTestManager(String loginUser) {
     HtmlUnitDriver driver = new HtmlUnitDriver(BrowserVersion.FIREFOX_17);
     driver.setJavascriptEnabled(true);
     WebDriverWait wait = new WebDriverWait(driver, 30);
@@ -110,6 +111,9 @@ public class SeleniumOEP {
     Assert.assertEquals(element.getText(), "Система исполнения услуг");
 
     Utils.login(driver, loginUser, "1");
+    if (driver.getTitle().equals("Отказано в доступе")) {
+      driver.get("https://localhost/web-client/admin/");
+    }
     wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(text(),'Новая процедура')]")));
     Utils.transitionTo(driver, "Услуги");
     wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(text(),'Список доступных услуг')]")));
@@ -131,19 +135,11 @@ public class SeleniumOEP {
     driver.findElement(By.xpath("//input[contains(@class,'v-textfield v-textfield-error v-textfield-required')]")).sendKeys(declarant);
     driver.findElement(By.xpath("//span[contains(text(),'Сохранить')]")).click();
     driver.findElement(By.xpath("//div[contains(@class,'v-table-cell-wrapper')][contains(text()," + declarant + ")]")).click();
-//    System.out.println(driver.getPageSource());
-//    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(text(),'Ключ')]")));
-
-//    Assert.assertNotNull(driver.findElement(By.xpath("//span[contains(text(),'Добавление значения в справочник " + declarant + "')]")));
-//    Assert.assertNotNull(driver.findElement(By.xpath("//span[contains(text(),'Ключ')]")));
-//    Assert.assertNotNull(driver.findElement(By.xpath("//span[contains(text(),'Значение')]")));
     driver.findElement(By.xpath("//span[contains(@class,'v-tabsheet-caption-close')]")).click();
     driver.quit();
-//    long estimatedTime = System.currentTimeMillis() - start;
-//    System.out.println(estimatedTime);
   }
 
-  public static void smokeTestAdmin(String loginUser) throws InterruptedException {
+  public static void smokeTestAdmin(String loginUser) {
     HtmlUnitDriver driver = new HtmlUnitDriver(BrowserVersion.FIREFOX_17);
     driver.setJavascriptEnabled(true);
     WebDriverWait wait = new WebDriverWait(driver, 30);
@@ -193,7 +189,7 @@ public class SeleniumOEP {
     wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(text(),'Создание группы')]")));
 
     driver.findElement(By.xpath("//div[contains(text(),'Информационные системы')]")).click();
-    Thread.sleep(1000);
+    wait.withTimeout(5, TimeUnit.SECONDS);
     wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[contains(text(),'8201')]")));
     driver.findElement(By.xpath("//div[contains(text(),'8201')]")).click();
     driver.findElement(By.xpath("//span[contains(text(),'Очистить')]")).click();
@@ -216,22 +212,18 @@ public class SeleniumOEP {
 
     driver.findElement(By.xpath("//div[contains(text(),'Логи')]")).click();
     wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(text(),'Субъект')]")));
-
+    wait.withTimeout(5, TimeUnit.SECONDS);
     driver.findElement(By.xpath("//div[contains(text(),'Новости')]")).click();
+    wait.withTimeout(5, TimeUnit.SECONDS);
     wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(text(),'Список новостей')]")));
     driver.findElement(By.xpath("//input[contains(@class,'v-textfield v-textfield-required')]")).sendKeys(testKey);
-//    driver.findElement(By.xpath("//iframe[contains(@class, 'gwt-RichTextArea')]")).sendKeys(testName);
     driver.findElement(By.xpath("//span[contains(text(),'Создать')]")).click();
-//    Thread.sleep(2000);
-//    driver.findElement(By.xpath("//span[contains(text(),'Сбросить')]")).click();
-//    Thread.sleep(2000);
-//    Assert.assertNull(driver.findElement(By.xpath("//input[contains(@class,'v-textfield v-textfield-required')]")));
     driver.findElement(By.xpath("//span[contains(@class,'v-tabsheet-caption-close')]")).click();
     driver.quit();
 
   }
 
-  public static void editUserTest() throws InterruptedException {
+  public static void viewUserTest(String loginuser) {
     HtmlUnitDriver driver = new HtmlUnitDriver(BrowserVersion.FIREFOX_17);
     driver.setJavascriptEnabled(true);
     WebDriverWait wait = new WebDriverWait(driver, 10);
@@ -241,53 +233,35 @@ public class SeleniumOEP {
     WebElement element = driver.findElement(By.xpath("/html/body/center/form/table/tbody/tr/td/table/tbody/tr/th"));
     Assert.assertEquals(element.getText(), "Система исполнения услуг");
 
-    Utils.login(driver, "demoadmin", "demoadmin");
+    Utils.login(driver, loginuser, "1");
     if (driver.getTitle().equals("Отказано в доступе")) {
       driver.get("https://localhost/web-client/admin/");
     }
-    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(text(),'Организация')]")));
-    driver.findElement(By.xpath("//div[contains(text(),'Организация')]")).click();
-
-
-    Random random = new Random();
-    String[] user = {"login" + random.nextInt(1000), "pass" + random.nextInt(1000), "User" + random.nextInt(1000)};
-    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(text(),'Добавить пользователя')]")));
-
-    driver.findElement(By.xpath("//span[contains(text(),'Добавить пользователя')]")).click();
-    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(@class,'v-checkbox v-select-option')]")));
-
-
-    driver.findElement(By.xpath("//div[1]/div/div/div/div[2]/div/input")).sendKeys(user[0]);
-    driver.findElement(By.xpath("//div[2]/div/div/div/div[2]/div/input")).sendKeys(user[1]);
-    driver.findElement(By.xpath("//div[3]/div/div/div/div[2]/div/input")).sendKeys(user[1]);
-    driver.findElement(By.xpath("//div[4]/div/div/div/div[2]/div/input")).sendKeys(user[2]);
-    driver.findElement(By.xpath("//div[11]/div/div/div/div/div/div/span/span[contains(text(),'Добавить')]")).click();
-    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(@class,'v-table-cell-wrapper')][contains(text()," + user[0] + ")]")));
-
-    driver.findElement(By.xpath("//div[contains(text(),'Сертификаты')]")).click();
-    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(text(),'Привязка сертификатов')]")));
-
+    wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[contains(text(),'Пользователи')]")));
     driver.findElement(By.xpath("//div[contains(text(),'Пользователи')]")).click();
-    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//input[contains(text()," + user[0] + ")]")));
-    driver.findElement(By.xpath("//input[contains(text()," + user[0] + ")]"));
+    wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//table[contains(@class, 'v-table-table')]/tbody/tr[2]/td[2]")));
+    driver.findElement(By.xpath("//table[contains(@class, 'v-table-table')]/tbody/tr[2]/td[2]")).click();
 
-    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(text(),'Редактирование')]")));
-    driver.findElement(By.xpath("//span[contains(text(),'Редактирование')]")).click();
-    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(text(),'Права')]")));
-    driver.findElement(By.xpath("//span[contains(text(),'Общий контролер')]")).click();
-    driver.findElement(By.xpath("//span[contains(text(),'Применить')]")).click();
-
-    driver.findElement(By.xpath("//span[contains(@class,'v-tabsheet-caption-close')]")).click();
-    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(text()," + user[0] + ")]")));
-
-    Utils.login(driver, user[0], user[1]);
-    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(text(),'Состояние исполнения')]")));
+    wait.withTimeout(5, TimeUnit.SECONDS);
+    wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[contains(text(),'Просмотр')]")));
+    driver.findElement(By.xpath("//span[contains(text(),'Просмотр')]")).click();
+    wait.withTimeout(5, TimeUnit.SECONDS);
+    wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[contains(text(),'Назад')]")));
+    Assert.assertNotNull(driver.findElement(By.xpath("//span[contains(text(),'ФИО:')]")));
+    Assert.assertNotNull(driver.findElement(By.xpath("//span[contains(text(),'Роль:')]")));
+    Assert.assertNotNull(driver.findElement(By.xpath("//span[contains(text(),'Организация:')]")));
+    Assert.assertNotNull(driver.findElement(By.xpath("//span[contains(text(),'Состоит в группах:')]")));
+    Assert.assertNotNull(driver.findElement(By.xpath("//span[contains(text(),'Имеет доступ к группам исполнителей:')]")));
+    Assert.assertNotNull(driver.findElement(By.xpath("//span[contains(text(),'Имеет доступ к группам организаций:')]")));
+    Assert.assertNotNull(driver.findElement(By.xpath("//span[contains(text(),'Дата создания:')]")));
+    Assert.assertNotNull(driver.findElement(By.xpath("//span[contains(text(),'Создатель:')]")));
+    driver.findElement(By.xpath("//span[contains(text(),'Назад')]")).click();
+    wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//table[contains(@class, 'v-table-table')]/tbody/tr[2]")));
     driver.findElement(By.xpath("//span[contains(@class,'v-tabsheet-caption-close')]")).click();
     driver.quit();
   }
 
-  public static void smokeTestRequester(String loginUser) throws InterruptedException {
-//  public static void smokeTestRequester() throws InterruptedException {
+  public static void smokeTestRequester(String loginUser) {
     HtmlUnitDriver driver = new HtmlUnitDriver(BrowserVersion.FIREFOX_17);
     driver.setJavascriptEnabled(true);
     WebDriverWait wait = new WebDriverWait(driver, 30);
@@ -297,45 +271,40 @@ public class SeleniumOEP {
     WebElement element = driver.findElement(By.xpath("/html/body/center/form/table/tbody/tr/td/table/tbody/tr/th"));
     Assert.assertEquals(element.getText(), "Система исполнения услуг");
 
-//    Utils.login(driver, "demorequester", "demorequester");
     Utils.login(driver, loginUser, "1");
-    Thread.sleep(10000);
+    wait.withTimeout(5, TimeUnit.SECONDS);
     wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(text(),'Процедура')]")));
 
     driver.findElement(By.xpath("//tr[2]/td/div/div[contains(@class,'v-filterselect-button')]")).click();
-    Thread.sleep(5000);
+    wait.withTimeout(3, TimeUnit.SECONDS);
     wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(text(),'v2 Сведения о неполучении пособия')]")));
     driver.findElement(By.xpath("//span[contains(text(),'v2 Сведения о неполучении пособия')]")).click();
-    Thread.sleep(5000);
+    wait.withTimeout(3, TimeUnit.SECONDS);
     wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(text(),'Завершить')]")));
     driver.findElement(By.xpath("//span[contains(text(),'Завершить')]")).click();
-    Thread.sleep(5000);
+    driver.manage().timeouts().pageLoadTimeout(5, TimeUnit.SECONDS);
     wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[contains(text(),'Cледующая заявка...')]")));
 
-//    wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(text(),'Исполнение')]")));
     driver.findElement(By.xpath("//div[contains(text(),'Исполнение')]")).click();
-    Thread.sleep(40000);
+    wait.withTimeout(40, TimeUnit.SECONDS);
     wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[contains(text(),'Обновить списки заявок')]")));
     driver.findElement(By.xpath("//span[contains(text(),'Обновить списки заявок')]")).click();
-    Thread.sleep(5000);
+    wait.withTimeout(10, TimeUnit.SECONDS);
     wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//tbody/tr[1]/td/div/div/span/span[contains(text(),'Забрать')]")));
+    wait.withTimeout(10, TimeUnit.SECONDS);
     driver.findElement(By.xpath("//tbody/tr[1]/td/div/div/span/span[contains(text(),'Забрать')]")).click();
-//    long startTime= System.currentTimeMillis();
-//    do {
-//      driver.findElement(By.xpath("//span[contains(text(),'Обновить списки заявок')]")).click();
-//    } while (!(driver.findElement(By.xpath("//div[contains(text(),'Забрать')]")).isDisplayed()) || startTime<=60000 );
-//    driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
 
-    Thread.sleep(10000);
-    wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[contains(text(),'Обработать')]")));
+    wait.withTimeout(15, TimeUnit.SECONDS);
+    wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//tbody/tr[1]/td/div/div/span/span[contains(text(),'Обработать')]")));
+    driver.findElement(By.xpath("//tbody/tr[1]/td/div/div/span/span[contains(text(),'Обработать')]")).click();
 
-    driver.findElement(By.xpath("//span[contains(text(),'Обработать')]")).click();
-    Thread.sleep(10000);
+    wait.withTimeout(10, TimeUnit.SECONDS);
     wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(text(),'Проверка результатов')]")));
     wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//div[contains(text(),'Месяцы')]")));
     wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[contains(text(),'Завершить')]")));
     driver.findElement(By.xpath("//span[contains(text(),'Завершить')]")).click();
-    Thread.sleep(10000);
+
+    wait.withTimeout(10, TimeUnit.SECONDS);
     wait.until(ExpectedConditions.presenceOfElementLocated(By.xpath("//span[contains(text(),'Процедура')]")));
     driver.findElement(By.xpath("//span[contains(@class,'v-tabsheet-caption-close')]")).click();
     driver.quit();
